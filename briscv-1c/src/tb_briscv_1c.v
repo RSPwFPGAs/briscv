@@ -63,6 +63,14 @@ initial begin
   for(x=0; x<32; x=x+1) begin
     `REGISTER_FILE[x] = 32'd0;
   end
+
+  dummy_ram[0+0] = 32'h 3fc00093; //       li      x1,1020
+  dummy_ram[0+1] = 32'h 0000a023; //       sw      x0,0(x1)
+  dummy_ram[0+2] = 32'h 0000a103; // loop: lw      x2,0(x1)
+  dummy_ram[0+3] = 32'h 00110113; //       addi    x2,x2,1
+  dummy_ram[0+4] = 32'h 0020a023; //       sw      x2,0(x1)
+  dummy_ram[0+5] = 32'h ff5ff06f; //       j       <loop>
+
   $readmemh(PROGRAM, dummy_ram);
 end
 
@@ -77,6 +85,14 @@ for(byte=0; byte<DATA_WIDTH/8; byte=byte+1) begin : BYTE_LOOP
   end
 end
 endgenerate
+
+// dump to VCD file
+initial begin
+  if ($test$plusargs("vcd")) begin
+     $dumpfile("briscv_1c.vcd");
+     $dumpvars(0, tb_briscv_1c);
+  end
+end
 
 
 integer start_time;
@@ -104,7 +120,9 @@ initial begin
     $display("Could not open log file... Exiting!");
     $finish();
   end
-
+  
+  #100
+  $finish();
 
 end
 
